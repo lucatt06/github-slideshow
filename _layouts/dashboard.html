@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title }} | {{ site.title }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      background: #f4f4f4;
+      color: #333;
+      padding: 20px;
+    }
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    h1.report-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1a1a2e;
+      margin-bottom: 20px;
+    }
+    h2.section-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #1a1a2e;
+      margin: 28px 0 10px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+    thead tr {
+      background-color: #1a2f5a;
+      color: #fff;
+    }
+    thead th {
+      padding: 9px 10px;
+      text-align: left;
+      font-weight: bold;
+      font-size: 12px;
+      border: 1px solid #14254a;
+    }
+    tbody tr:nth-child(odd) {
+      background-color: #fff;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #f0f4fa;
+    }
+    tbody tr:hover {
+      background-color: #dbe8f8;
+    }
+    tbody td {
+      padding: 8px 10px;
+      border: 1px solid #d6dce8;
+      vertical-align: top;
+      line-height: 1.4;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .badge-frio    { background: #cce5ff; color: #004085; }
+    .badge-tibio   { background: #fff3cd; color: #856404; }
+    .badge-caliente { background: #f8d7da; color: #721c24; }
+    .badge-congelado { background: #d1ecf1; color: #0c5460; }
+    .action-llamada { color: #c0392b; font-weight: bold; }
+    .action-espera  { color: #7f8c8d; }
+    .action-seguimiento { color: #2980b9; }
+    .report-footer {
+      margin-top: 30px;
+      font-size: 11px;
+      color: #888;
+      text-align: right;
+    }
+    .summary-tag {
+      display: inline-block;
+      background: #eaf0fb;
+      border: 1px solid #c5d3ed;
+      border-radius: 3px;
+      padding: 1px 6px;
+      margin: 1px 2px;
+      font-size: 12px;
+    }
+    .incidencia-row td:first-child {
+      font-weight: bold;
+      color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    {{ content }}
+    <div class="report-footer">Generado el {{ page.date | date: "%d/%m/%Y" }}</div>
+  </div>
+</body>
+</html>
