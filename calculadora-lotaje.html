@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Lotaje - Trading</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --accent: #2ea043;
+      --accent-hover: #3fb950;
+      --accent-dim: #1a3a27;
+      --red: #da3633;
+      --red-dim: #3a1a1a;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --text-subtle: #6e7681;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrap .prefix,
+    .input-wrap .suffix {
+      position: absolute;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .input-wrap .prefix { left: 12px; }
+    .input-wrap .suffix { right: 12px; }
+
+    input[type="number"],
+    select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none;
+    }
+
+    input[type="number"]:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(46,160,67,0.15);
+    }
+
+    .has-prefix input { padding-left: 28px; }
+    .has-suffix input { padding-right: 36px; }
+
+    select { cursor: pointer; padding-right: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238b949e' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    .section-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 8px;
+    }
+
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: scale(0.99); }
+
+    #results {
+      margin-top: 24px;
+      display: none;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .result-row.main {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+    }
+
+    .result-row.secondary {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+
+    .result-row.danger {
+      background: var(--red-dim);
+      border: 1px solid var(--red);
+    }
+
+    .result-label {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .result-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .result-row.main .result-value { color: var(--accent-hover); }
+    .result-row.secondary .result-value { color: var(--text); }
+    .result-row.danger .result-value { color: #ff7b7b; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 12px;
+      background: var(--accent-dim);
+      color: var(--accent-hover);
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .risk-bar-wrap {
+      margin-top: 16px;
+    }
+
+    .risk-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .risk-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--border);
+      overflow: hidden;
+    }
+
+    .risk-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s, background 0.4s;
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+      margin-top: 4px;
+    }
+
+    footer {
+      margin-top: 28px;
+      color: var(--text-subtle);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Calculadora de Lotaje</h1>
+  <p>Calcula el tamano de posicion optimo para cada operacion</p>
+</header>
+
+<div class="card">
+  <p class="section-title">Parametros de la cuenta</p>
+  <div class="grid">
+
+    <div class="field">
+      <label for="balance">Balance de la cuenta</label>
+      <div class="input-wrap has-prefix">
+        <span class="prefix">$</span>
+        <input type="number" id="balance" min="1" step="100" value="10000" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="currency">Divisa de la cuenta</label>
+      <div class="input-wrap">
+        <select id="currency">
+          <option value="USD">USD - Dolar</option>
+          <option value="EUR">EUR - Euro</option>
+          <option value="GBP">GBP - Libra</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="risk">Riesgo por operacion</label>
+      <div class="input-wrap has-suffix">
+        <input type="number" id="risk" min="0.1" max="10" step="0.1" value="1" />
+        <span class="suffix">%</span>
+      </div>
+      <span class="hint">Se recomienda entre 0.5% y 2%</span>
+    </div>
+
+    <div class="field">
+      <label for="riskAmount">Monto en riesgo</label>
+      <div class="input-wrap has-prefix">
+        <span class="prefix">$</span>
+        <input type="number" id="riskAmount" min="1" step="10" value="100" readonly style="cursor:default;opacity:0.7;" />
+      </div>
+      <span class="hint">Calculado automaticamente</span>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="section-title">Parametros del par</p>
+  <div class="grid">
+
+    <div class="field full">
+      <label for="pair">Par / Instrumento</label>
+      <div class="input-wrap">
+        <select id="pair">
+          <optgroup label="Forex Mayores">
+            <option value="EURUSD" data-pip="0.0001" data-pv="10">EUR/USD</option>
+            <option value="GBPUSD" data-pip="0.0001" data-pv="10">GBP/USD</option>
+            <option value="AUDUSD" data-pip="0.0001" data-pv="10">AUD/USD</option>
+            <option value="NZDUSD" data-pip="0.0001" data-pv="10">NZD/USD</option>
+            <option value="USDCAD" data-pip="0.0001" data-pv="10">USD/CAD</option>
+            <option value="USDCHF" data-pip="0.0001" data-pv="10">USD/CHF</option>
+            <option value="USDJPY" data-pip="0.01"   data-pv="1000">USD/JPY</option>
+          </optgroup>
+          <optgroup label="Forex Menores">
+            <option value="EURGBP" data-pip="0.0001" data-pv="10">EUR/GBP</option>
+            <option value="EURJPY" data-pip="0.01"   data-pv="1000">EUR/JPY</option>
+            <option value="GBPJPY" data-pip="0.01"   data-pv="1000">GBP/JPY</option>
+            <option value="AUDJPY" data-pip="0.01"   data-pv="1000">AUD/JPY</option>
+            <option value="CADJPY" data-pip="0.01"   data-pv="1000">CAD/JPY</option>
+          </optgroup>
+          <optgroup label="Indices (por punto)">
+            <option value="US30"   data-pip="1"      data-pv="1">DOW JONES (US30)</option>
+            <option value="SPX500" data-pip="0.1"    data-pv="1">S&amp;P 500</option>
+            <option value="NAS100" data-pip="0.1"    data-pv="1">NASDAQ 100</option>
+            <option value="GER40"  data-pip="1"      data-pv="1">DAX 40</option>
+          </optgroup>
+          <optgroup label="Materias primas">
+            <option value="XAUUSD" data-pip="0.1"    data-pv="1">ORO (XAU/USD)</option>
+            <option value="XAGUSD" data-pip="0.001"  data-pv="1">PLATA (XAG/USD)</option>
+            <option value="USOIL"  data-pip="0.01"   data-pv="1">PETROLEO (WTI)</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="slPips">Stop Loss</label>
+      <div class="input-wrap has-suffix">
+        <input type="number" id="slPips" min="1" step="1" value="20" />
+        <span class="suffix" id="slUnit">pips</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="pipValue">Valor del pip / punto</label>
+      <div class="input-wrap has-prefix">
+        <span class="prefix">$</span>
+        <input type="number" id="pipValue" min="0.01" step="0.01" value="10" />
+      </div>
+      <span class="hint">Por lote estandar</span>
+    </div>
+
+  </div>
+
+  <button onclick="calcular()">Calcular lotaje</button>
+
+  <div id="results">
+    <div class="divider"></div>
+    <p class="section-title">Resultado</p>
+
+    <div class="result-row main">
+      <span class="result-label">Lotes estandar recomendados</span>
+      <span class="result-value" id="res-lots">—</span>
+    </div>
+
+    <div class="grid" style="gap:10px;">
+      <div class="result-row secondary" style="margin:0;">
+        <div>
+          <div class="result-label">Mini lotes</div>
+          <div style="font-size:0.72rem;color:var(--text-subtle);">10 000 unidades</div>
+        </div>
+        <span class="result-value" id="res-mini">—</span>
+      </div>
+      <div class="result-row secondary" style="margin:0;">
+        <div>
+          <div class="result-label">Micro lotes</div>
+          <div style="font-size:0.72rem;color:var(--text-subtle);">1 000 unidades</div>
+        </div>
+        <span class="result-value" id="res-micro">—</span>
+      </div>
+    </div>
+
+    <div class="result-row secondary" style="margin-top:10px;">
+      <span class="result-label">Monto en riesgo real</span>
+      <span class="result-value" id="res-risk">—</span>
+    </div>
+
+    <div class="result-row danger" id="res-danger-row" style="display:none;margin-top:10px;">
+      <span class="result-label">Advertencia de riesgo</span>
+      <span class="result-value" id="res-danger">—</span>
+    </div>
+
+    <div class="risk-bar-wrap">
+      <div class="risk-bar-label">
+        <span>Nivel de riesgo</span>
+        <span id="risk-label-pct">0%</span>
+      </div>
+      <div class="risk-bar">
+        <div class="risk-bar-fill" id="risk-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Calculo basado en gestion de riesgo clasica: Lotaje = Riesgo $ / (SL x Valor pip) &nbsp;|&nbsp; Solo con fines educativos
+</footer>
+
+<script>
+  const pairSel   = document.getElementById('pair');
+  const balanceEl = document.getElementById('balance');
+  const riskEl    = document.getElementById('risk');
+  const riskAmtEl = document.getElementById('riskAmount');
+  const slPipsEl  = document.getElementById('slPips');
+  const pipValEl  = document.getElementById('pipValue');
+  const slUnitEl  = document.getElementById('slUnit');
+
+  // Sync pip value & unit label when pair changes
+  pairSel.addEventListener('change', () => {
+    const opt = pairSel.selectedOptions[0];
+    pipValEl.value = opt.dataset.pv;
+    // indices / commodities use "puntos" label
+    const indices = ['US30','SPX500','NAS100','GER40','XAUUSD','XAGUSD','USOIL'];
+    slUnitEl.textContent = indices.includes(opt.value) ? 'puntos' : 'pips';
+  });
+
+  // Sync risk amount
+  function syncRiskAmount() {
+    const bal  = parseFloat(balanceEl.value) || 0;
+    const pct  = parseFloat(riskEl.value)    || 0;
+    riskAmtEl.value = (bal * pct / 100).toFixed(2);
+  }
+
+  balanceEl.addEventListener('input', syncRiskAmount);
+  riskEl.addEventListener('input', syncRiskAmount);
+  syncRiskAmount();
+
+  function calcular() {
+    const balance  = parseFloat(balanceEl.value);
+    const riskPct  = parseFloat(riskEl.value);
+    const sl       = parseFloat(slPipsEl.value);
+    const pipValue = parseFloat(pipValEl.value);
+
+    if (!balance || !riskPct || !sl || !pipValue) {
+      alert('Por favor completa todos los campos.');
+      return;
+    }
+
+    const riskMoney = balance * riskPct / 100;
+    const lots      = riskMoney / (sl * pipValue);
+
+    const miniLots  = lots * 10;
+    const microLots = lots * 100;
+
+    // Real risk with rounded lots (2 decimals)
+    const lotsRounded = Math.floor(lots * 100) / 100;
+    const realRisk    = lotsRounded * sl * pipValue;
+
+    document.getElementById('res-lots').textContent  = lots.toFixed(2) + ' lotes';
+    document.getElementById('res-mini').textContent  = miniLots.toFixed(1);
+    document.getElementById('res-micro').textContent = microLots.toFixed(0);
+    document.getElementById('res-risk').textContent  = '$' + realRisk.toFixed(2) + ' (' + riskPct.toFixed(2) + '%)';
+
+    // Risk bar
+    const pct    = Math.min(riskPct, 10);
+    const fill   = document.getElementById('risk-fill');
+    const pctPx  = (pct / 10 * 100).toFixed(1) + '%';
+    fill.style.width = pctPx;
+    fill.style.background = riskPct <= 1 ? '#2ea043'
+                          : riskPct <= 2 ? '#d29922'
+                          : '#da3633';
+    document.getElementById('risk-label-pct').textContent = riskPct.toFixed(2) + '%';
+
+    // Danger warning
+    const dangerRow = document.getElementById('res-danger-row');
+    if (riskPct > 2) {
+      dangerRow.style.display = 'flex';
+      document.getElementById('res-danger').textContent =
+        'Riesgo alto: ' + riskPct + '% puede comprometer tu cuenta';
+    } else {
+      dangerRow.style.display = 'none';
+    }
+
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+</script>
+</body>
+</html>
